@@ -1,0 +1,13 @@
+# ignore these file types:
+*.png
+*.svg
+*.fig
+*.asv
+*.mat
+*.xml
+*.pyc
+
+# also ignore this PyCharm folder
+*\.idea
+*\.vs
+*\__pycache__
