@@ -28,31 +28,17 @@ def search_for_teensy_module(name):
 
 def read_module_name(serial_obj):
     serial_obj.read_all()  # flush Serial
-    # print(serial_obj.inWaiting())
+
+    # Ask the COM device to identify itself
     _send_byte_alone(serial_obj=serial_obj, header_byte=255)
     sleep(0.05)
-    # print(serial_obj.inWaiting())
 
-    # print(serial_obj.read_all())
-
-    # # read Acknowledgement
-    # print(int.from_bytes(serial_obj.read(size=1), byteorder='big'))
-    # # read firmware
-    # for _ in range(4):
-    #     print(serial_obj.read(size=1))
-    # #
-    # # read name length
-    # name_length = int.from_bytes(serial_obj.read(size=1), byteorder='big')
-    # # read name
-    # name = serial_obj.read(size=name_length)
-    # # read last 0 byte
-    # print(int.from_bytes(serial_obj.read(size=1), byteorder='big'))
-
-    #
+    # Ignore the first 5, they are part of the protocol but not relevant here
     _ = serial_obj.read(size=5)
 
     # read name length
     name_length = int.from_bytes(serial_obj.read(size=1), byteorder='big')
+    
     # read name
     name = serial_obj.read(size=name_length)
 
@@ -129,15 +115,13 @@ def send_data_until_confirmation(serial_obj, header_byte, data=None):
 
                 if input_byte == 14:
                     # got byte
-                    # print('GOT BYTE')
                     serial_obj.read_all()  # flush Serial
                     received = True
                     break
                 #
 
                 if input_byte == 15:
-                    # resend
-                    # print('DID ABORT')
+                    # abort and resend
                     serial_obj.read_all()  # flush Serial
                     break
                 #
@@ -159,22 +143,20 @@ def wait_for_signal_byte(serial_obj, target_bytes, timeout=0):
     input_byte = -1
     st = time()
     while True:
-        # serial_obj.read_until(bytes(target_chr, 'ascii'), size=1)
-        # input_byte = serial_obj.readline().decode().rstrip()
         if serial_obj.in_waiting:
+            # Read for response
             input_byte = int.from_bytes(serial_obj.read(size=1), byteorder='big')
             try:
                 if input_byte in target_bytes:
+                    # Scan for expected responses
                     received = True
 
+                    # Acknowledge
                     serial_obj.write(bytes(chr(14), 'ascii'))
-                    # print('Send: GOT_BYTE')
-                    # serial_obj.read_all()  # flush Serial
 
                     break
                 else:
-                    # print("Unexpected Byte: %d, %f" % (input_byte, time() - t))
-                    # serial_obj.write(bytes(chr(14), 'ascii'))
+                    # Unexpected Byte
                     serial_obj.read_all()  # flush Serial
                 #
             except Exception as e:
