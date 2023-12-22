@@ -1,0 +1,1 @@
+This Project uses a Teensy 3.6 to generate an analoge output which in turn is used to drive either a Laser or LEDs for optogenetic stimulation. It is controlled over a simple GUI that lets the user set the relative intensity of the control signal. 
